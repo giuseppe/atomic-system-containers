@@ -7,18 +7,19 @@ EnvironmentFile=-/etc/sysconfig/docker
 EnvironmentFile=-/etc/sysconfig/docker-storage
 EnvironmentFile=-/etc/sysconfig/docker-network
 Environment=GOTRACEBACK=crash
-ExecStartPre=/bin/bash -c 'export -p > /run/docker-bash-env'
-ExecStart=/bin/runc --systemd-cgroup run $NAME
-ExecStop=/bin/runc kill $NAME
-Restart=on-failure
-WorkingDirectory=$DESTDIR
-LimitNOFILE=1048576
-LimitNPROC=1048576
-LimitCORE=infinity
-TimeoutStartSec=0
-SELinuxContext=unconfined_u:unconfined_r:unconfined_t:s0
-Delegate=yes
-KillMode=none
+Environment=NAME=docker-fedora
+Environment=DESTDIR=/var/lib/containers/atomic/docker-fedora.0/rootfs
+
+# We use runcon instead of SELinuxContext= as we don't want it for ExecStartPre=
+Environment=CONTEXT=system_u:system_r:container_runtime_t:s0
+ExecStartPre=/bin/bash -c 'export -p > /run/docker-fedora/bash-env'
+ExecStart=/var/lib/containers/atomic/docker-fedora.0/rootfs/usr/lib64/ld-linux-x86-64.so.2 /var/lib/containers/atomic/docker-fedora.0/rootfs/usr/bin/bash /var/lib/containers/atomic/docker-f$
+
+RuntimeDirectory=docker-fedora
+Restart=no
+WorkingDirectory=/var/lib/containers/atomic/docker-fedora.0/rootfs/
+KillMode=control-group
+Type=simple
 
 [Install]
 WantedBy=multi-user.target
